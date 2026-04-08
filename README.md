@@ -27,6 +27,16 @@ git push -u origin main
 
 4. Optional: run **Update AL-Go system files** workflow if Microsoft updates the template.
 
+## AL-Go CI: Initialization / `$ProjectBuildInfo` error
+
+1. **`.AL-Go/settings.json`** must exist at repo root (commit + push it).  
+2. **`app.json` is at the repo root**, so **`appFolders`** uses **`["./"]`** (AL-Go expects `./` / `.\` style paths; plain `"."` can be skipped by folder resolution).  
+3. Do **not** set **`projects`** to an empty array in `AL-Go-Settings.json` — that blocks auto-discovery. Omit **`projects`** so AL-Go adds **`"."`** when it finds **`.AL-Go/settings.json`** at root.
+
+Confirm on GitHub: **Code** tab shows **`.AL-Go/settings.json`**. If that file is missing on the remote, Actions will always show **Found AL-Go Projects:** empty.
+
+After fixes, **commit, push**, then **Re-run** the workflow.
+
 ## Git in Cursor / VS Code terminal
 
 If `git` is “not recognized” only inside the editor terminal, this workspace adds Git to `Path` via `.vscode/settings.json`. **Close all terminals**, open a **new** terminal, or run **Developer: Reload Window**. Git lives at `C:\Program Files\Git\bin`.
