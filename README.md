@@ -29,11 +29,13 @@ git push -u origin main
 
 ## AL-Go CI: Initialization / `$ProjectBuildInfo` error
 
-1. **`.AL-Go/settings.json`** at repo root marks this as an AL-Go project.  
-2. **`.github/AL-Go-Settings.json`** includes **`projects`: `["."]`** so the root is always in the build list.  
-3. **`.AL-Go/settings.json`** sets **`appFolders`: `["."]`** because **`app.json`** lives at the repository root.
+1. **`.AL-Go/settings.json`** must exist at repo root (commit + push it).  
+2. **`app.json` is at the repo root**, so **`appFolders`** uses **`["./"]`** (AL-Go expects `./` / `.\` style paths; plain `"."` can be skipped by folder resolution).  
+3. Do **not** set **`projects`** to an empty array in `AL-Go-Settings.json` — that blocks auto-discovery. Omit **`projects`** so AL-Go adds **`"."`** when it finds **`.AL-Go/settings.json`** at root.
 
-After changing these files, **commit and push** to `main`, then re-run the workflow. Old runs (or PRs from branches without these files) will keep failing until updated.
+Confirm on GitHub: **Code** tab shows **`.AL-Go/settings.json`**. If that file is missing on the remote, Actions will always show **Found AL-Go Projects:** empty.
+
+After fixes, **commit, push**, then **Re-run** the workflow.
 
 ## Git in Cursor / VS Code terminal
 
