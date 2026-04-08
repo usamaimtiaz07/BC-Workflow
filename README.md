@@ -27,6 +27,10 @@ git push -u origin main
 
 4. Optional: run **Update AL-Go system files** workflow if Microsoft updates the template.
 
+## AL-Go CI: “Found AL-Go Projects” empty / Initialization fails
+
+AL-Go only treats a folder as a project if it contains **`.AL-Go/settings.json`**. This repo includes that file at the **repository root** (next to `app.json`). After pulling latest, re-run the failed workflow.
+
 ## Git in Cursor / VS Code terminal
 
 If `git` is “not recognized” only inside the editor terminal, this workspace adds Git to `Path` via `.vscode/settings.json`. **Close all terminals**, open a **new** terminal, or run **Developer: Reload Window**. Git lives at `C:\Program Files\Git\bin`.
