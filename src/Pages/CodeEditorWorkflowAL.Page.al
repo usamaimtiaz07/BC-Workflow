@@ -11,23 +11,40 @@ page 50114 "Code Editor Workflow AL"
     {
         area(Content)
         {
-            group(Editor)
+            group(Intro)
             {
-                Caption = 'Text Editor';
-                field(PreviewTxt; PreviewTxt)
+                Caption = 'About';
+                ShowCaption = true;
+                InstructionalText = 'Preview shows the full generated AL when it fits in the field; very large files are truncated in the browser. Always use Download AL File for the exact blob. Build a .app in Visual Studio Code, then upload via Extension Management.';
+            }
+            group(Summary)
+            {
+                Caption = 'Generated file';
+                field(FileNameDisplay; FileNameDisplay)
                 {
                     ApplicationArea = All;
-                    Caption = 'AL (preview, first 2048 chars)';
-                    MultiLine = true;
+                    Caption = 'Suggested file name';
                     Editable = false;
-                    ToolTip = 'Preview of generated AL. Use Download AL File for the full blob.';
+                    ToolTip = 'Last generated file name from Custom Approval Workflow setup.';
                 }
                 field(CharCount; CharCount)
                 {
                     ApplicationArea = All;
-                    Caption = 'Total characters';
+                    Caption = 'Characters in blob';
                     Editable = false;
-                    ToolTip = 'Full character count of the blob (all lines). Preview below shows the first 2048 characters only.';
+                    ToolTip = 'Total character count including all line breaks.';
+                }
+            }
+            group(Editor)
+            {
+                Caption = 'AL source preview';
+                field(PreviewTxt; PreviewTxt)
+                {
+                    ApplicationArea = All;
+                    Caption = 'AL';
+                    MultiLine = true;
+                    Editable = false;
+                    ToolTip = 'Read-only preview of generated page extension AL. Download for the full file.';
                 }
             }
         }
@@ -37,11 +54,49 @@ page 50114 "Code Editor Workflow AL"
     {
         area(Processing)
         {
+            action(DownloadALFile)
+            {
+                ApplicationArea = All;
+                Caption = 'Download AL File';
+                Image = ExportFile;
+                Promoted = true;
+                PromotedCategory = Process;
+                PromotedIsBig = true;
+                ToolTip = 'Download the full generated AL file.';
+
+                trigger OnAction()
+                begin
+                    DownloadFromBlob();
+                end;
+            }
+            action(ResetCode)
+            {
+                ApplicationArea = All;
+                Caption = 'Reset Code';
+                Image = Restore;
+                Promoted = true;
+                PromotedCategory = Process;
+                ToolTip = 'Regenerate AL from the current setup.';
+
+                trigger OnAction()
+                var
+                    Gen: Codeunit "AL Page Extension Generator";
+                    ALTxt: Text;
+                begin
+                    ALTxt := Gen.GeneratePageExtension(SetupGlobal, NextPageExtObjectId);
+                    Gen.SaveGeneratedToSetup(SetupGlobal, ALTxt, NextPageExtObjectId);
+                    SetupGlobal.Get(SetupGlobal."No.");
+                    LoadPreview();
+                    CurrPage.Update(false);
+                end;
+            }
             action(AutoDeploySetup)
             {
                 ApplicationArea = All;
                 Caption = 'AutoDeploy Setup';
                 Image = Setup;
+                Promoted = true;
+                PromotedCategory = Process;
                 ToolTip = 'Open deployment scheduler (configure Admin Center API keys outside BC).';
 
                 trigger OnAction()
@@ -51,16 +106,20 @@ page 50114 "Code Editor Workflow AL"
                     Mgt.OpenAutoDeploy(SetupGlobal);
                 end;
             }
-            action(DownloadALFile)
+            action(ScheduleDeployment)
             {
                 ApplicationArea = All;
-                Caption = 'Download AL File';
-                Image = ExportFile;
-                ToolTip = 'Download the full generated AL file.';
+                Caption = 'Schedule Deployment';
+                Image = DateRange;
+                Promoted = true;
+                PromotedCategory = Process;
+                ToolTip = 'Open Auto Deploy Scheduler (same as AutoDeploy Setup).';
 
                 trigger OnAction()
+                var
+                    Mgt: Codeunit "Custom Approval Workflow Mgt.";
                 begin
-                    DownloadFromBlob();
+                    Mgt.OpenAutoDeploy(SetupGlobal);
                 end;
             }
             action(ClearText)
@@ -84,45 +143,13 @@ page 50114 "Code Editor Workflow AL"
                     CurrPage.Update(false);
                 end;
             }
-            action(ResetCode)
-            {
-                ApplicationArea = All;
-                Caption = 'Reset Code';
-                Image = Restore;
-                ToolTip = 'Regenerate AL from the current setup.';
-
-                trigger OnAction()
-                var
-                    Gen: Codeunit "AL Page Extension Generator";
-                    ALTxt: Text;
-                begin
-                    ALTxt := Gen.GeneratePageExtension(SetupGlobal, NextPageExtObjectId);
-                    Gen.SaveGeneratedToSetup(SetupGlobal, ALTxt, NextPageExtObjectId);
-                    SetupGlobal.Get(SetupGlobal."No.");
-                    LoadPreview();
-                    CurrPage.Update(false);
-                end;
-            }
-            action(ScheduleDeployment)
-            {
-                ApplicationArea = All;
-                Caption = 'Schedule Deployment';
-                Image = DateRange;
-                ToolTip = 'Schedule extension deployment via Admin Center.';
-
-                trigger OnAction()
-                var
-                    Mgt: Codeunit "Custom Approval Workflow Mgt.";
-                begin
-                    Mgt.OpenAutoDeploy(SetupGlobal);
-                end;
-            }
         }
     }
 
     var
         SetupGlobal: Record "Custom Approval Workflow Setup";
-        PreviewTxt: Text[2048];
+        PreviewTxt: Text;
+        FileNameDisplay: Text[250];
         CharCount: Integer;
         NextPageExtObjectId: Integer;
 
@@ -142,15 +169,21 @@ page 50114 "Code Editor Workflow AL"
         FullText: Text;
     begin
         Clear(PreviewTxt);
+        Clear(FileNameDisplay);
         CharCount := 0;
         if not SetupGlobal.Get(SetupGlobal."No.") then
             exit;
         SetupGlobal.CalcFields("Generated AL Text");
-        if not SetupGlobal."Generated AL Text".HasValue then
+        FileNameDisplay := CopyStr(SetupGlobal."Last Generated File Name", 1, MaxStrLen(FileNameDisplay));
+        if FileNameDisplay = '' then
+            FileNameDisplay := '(run Generate Card Page on setup)';
+        if not SetupGlobal."Generated AL Text".HasValue then begin
+            PreviewTxt := '// No generated AL yet. Use Generate Card Page on Custom Approval Workflow.';
             exit;
+        end;
         FullText := ReadGeneratedAlTextFromSetup(SetupGlobal);
         CharCount := StrLen(FullText);
-        PreviewTxt := CopyStr(FullText, 1, MaxStrLen(PreviewTxt));
+        PreviewTxt := FullText;
     end;
 
     local procedure ReadGeneratedAlTextFromSetup(var SetupRec: Record "Custom Approval Workflow Setup"): Text
@@ -186,6 +219,3 @@ page 50114 "Code Editor Workflow AL"
         DownloadFromStream(InS, '', '', '', FileName);
     end;
 }
-
-
-
