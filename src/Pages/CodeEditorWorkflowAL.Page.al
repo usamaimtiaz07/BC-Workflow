@@ -15,7 +15,7 @@ page 50114 "Code Editor Workflow AL"
             {
                 Caption = 'About';
                 ShowCaption = true;
-                InstructionalText = 'Preview shows the full generated AL when it fits in the field; very large files are truncated in the browser. Always use Download AL File for the exact blob. Build a .app in Visual Studio Code, then upload via Extension Management.';
+                InstructionalText = 'Preview loads the full generated AL from the blob into this page. The web client may still visually clip very long text in the control, but the character count reflects the full blob. Use Download AL File for an exact file copy. Build a .app in Visual Studio Code, then upload via Extension Management.';
             }
             group(Summary)
             {

@@ -3,7 +3,10 @@ page 50115 "Auto Deploy Scheduler"
     ApplicationArea = All;
     Caption = 'AutoDeploy Scheduler';
     PageType = StandardDialog;
-    DataCaptionExpression = '';
+    InsertAllowed = false;
+    DeleteAllowed = false;
+    ModifyAllowed = true;
+    LinksAllowed = false;
 
     layout
     {
@@ -23,7 +26,7 @@ page 50115 "Auto Deploy Scheduler"
                 {
                     ApplicationArea = All;
                     Caption = 'Instant Deploy';
-                    ToolTip = 'When on, OK runs the instant-deploy steps (see note below). Use the Deploy action for the same without closing.';
+                    ToolTip = 'Turn on to enable Deploy. Turn off to use Schedule and the date/time fields.';
                     trigger OnValidate()
                     begin
                         CurrPage.Update(false);
@@ -52,7 +55,7 @@ page 50115 "Auto Deploy Scheduler"
             group(Note)
             {
                 ShowCaption = false;
-                InstructionalText = 'Extension Installation Status shows a new line only after you upload a .app file. Instant Deploy ON + OK opens Extension Management when the dialog closes (build the .app in Visual Studio Code first).';
+                InstructionalText = 'Deployment triggers a GitHub Actions workflow dispatch. For instant deploy use Deploy; for deferred execution use Schedule with Earliest Start Date/Time.';
             }
         }
     }
@@ -67,6 +70,7 @@ page 50115 "Auto Deploy Scheduler"
                 Caption = 'Schedule';
                 Image = DateRange;
                 Enabled = not InstantDeploy;
+                InFooterBar = true;
                 ToolTip = 'Schedule a later deployment. Disabled while Instant Deploy is on.';
 
                 trigger OnAction()
@@ -78,51 +82,39 @@ page 50115 "Auto Deploy Scheduler"
             {
                 ApplicationArea = All;
                 Caption = 'Deploy';
-                Enabled = InstantDeploy;
                 Image = SendTo;
-                ToolTip = 'Same as OK when Instant Deploy is on: opens Extension Management. Business Central cannot compile AL inside the client; you must upload a .app file.';
+                Enabled = InstantDeploy;
+                InFooterBar = true;
+                ToolTip = 'Dispatch deployment workflow immediately. Enabled only when Instant Deploy is on.';
 
                 trigger OnAction()
                 begin
                     RunInstantDeployFlow();
                 end;
             }
+            action(CancelAction)
+            {
+                ApplicationArea = All;
+                Caption = 'Cancel';
+                Image = Cancel;
+                InFooterBar = true;
+                ToolTip = 'Close this page.';
+
+                trigger OnAction()
+                begin
+                    CurrPage.Close();
+                end;
+            }
         }
     }
 
-    trigger OnQueryClosePage(CloseAction: Action): Boolean
-    begin
-        OpenExtensionMgmtAfterClose := false;
-        case CloseAction of
-            CloseAction::Cancel:
-                exit(true);
-            CloseAction::OK, CloseAction::LookupOK:
-                begin
-                    if InstantDeploy then
-                        OpenExtensionMgmtAfterClose := true;
-                    exit(true);
-                end;
-            else
-                exit(true);
-        end;
-    end;
-
-    trigger OnClosePage()
-    begin
-        if not OpenExtensionMgmtAfterClose then
-            exit;
-        OpenExtensionMgmtAfterClose := false;
-        Commit();
-        RunInstantDeployFlow();
-    end;
-
     var
         SetupGlobal: Record "Custom Approval Workflow Setup";
+        SchedulerMgt: Codeunit "WF Deploy Scheduler Mgt";
         ExtensionFileName: Text[250];
         InstantDeploy: Boolean;
         EarliestStart: DateTime;
         JobTimeout: Duration;
-        OpenExtensionMgmtAfterClose: Boolean;
 
     procedure SetSetup(var SetupIn: Record "Custom Approval Workflow Setup")
     begin
@@ -132,17 +124,23 @@ page 50115 "Auto Deploy Scheduler"
             ExtensionFileName := CopyStr(SetupIn."Last Generated File Name", 1, MaxStrLen(ExtensionFileName));
         if ExtensionFileName = '' then
             ExtensionFileName := 'PageExtension.al';
+        EarliestStart := CurrentDateTime();
+        JobTimeout := 30 * 60 * 1000;
     end;
 
     local procedure RunInstantDeployFlow()
-    var
-        ExtMgmt: Page "Extension Management";
     begin
-        ExtMgmt.Run();
+        SchedulerMgt.RunDeployNow(SetupGlobal);
+        Message('Deployment workflow queued successfully. Open the run page from Custom Approval Workflow to monitor progress.');
+        CurrPage.Close();
     end;
 
     local procedure RunScheduleDeployInfo()
     begin
-        Message('Scheduling is not executed inside this company. Use AL-Go / GitHub Actions with the Business Central Admin Center API, or upload a .app manually when Earliest Start is due.');
+        if EarliestStart = 0DT then
+            Error('Earliest Start Date/Time is required.');
+        SchedulerMgt.ScheduleDeploy(SetupGlobal, EarliestStart, JobTimeout);
+        Message('Deployment scheduled successfully.');
+        CurrPage.Close();
     end;
 }

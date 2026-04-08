@@ -14,6 +14,7 @@ permissionset 50124 "Workflow Demo"
         tabledata "Workflow Step Argument" = RIMD,
         tabledata "Workflow Rule" = RIMD,
         tabledata "Workflow - Table Relation" = RIMD,
+        tabledata "Job Queue Entry" = RIMD,
         tabledata "Field" = R,
         tabledata "Workflow Demo Setup" = RIMD,
         table "Approval Testing" = X,
@@ -35,5 +36,7 @@ permissionset 50124 "Workflow Demo"
         codeunit "Workflow Template Builder" = X,
         codeunit "Workflow Setup" = X,
         codeunit "Appr. Test. WF Events" = X,
-        codeunit "WF Nav Auto Deploy" = X;
+        codeunit "WF Nav Auto Deploy" = X,
+        codeunit "WF Deploy Scheduler Mgt" = X,
+        codeunit "WF Deploy Job Runner" = X;
 }

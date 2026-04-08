@@ -177,6 +177,66 @@ page 50112 "Custom Approval Workflow"
                     ToolTip = 'Workflow description.';
                 }
             }
+            group(DeploymentConfiguration)
+            {
+                Caption = 'Deployment Configuration';
+                InstructionalText = 'Configure GitHub dispatch settings for instant/scheduled deployment automation.';
+                field("Deploy Repo Owner"; Rec."Deploy Repo Owner")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'GitHub repository owner.';
+                }
+                field("Deploy Repo Name"; Rec."Deploy Repo Name")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'GitHub repository name.';
+                }
+                field("Deploy Branch"; Rec."Deploy Branch")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Git branch used for workflow dispatch.';
+                }
+                field("Deploy Workflow File"; Rec."Deploy Workflow File")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Workflow file name in .github/workflows.';
+                }
+                field("Deploy PAT Token"; Rec."Deploy PAT Token")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'GitHub token with Actions workflow dispatch permission.';
+                }
+            }
+            group(DeploymentMonitoring)
+            {
+                Caption = 'Deployment Monitoring';
+                field("Last Scheduled At"; Rec."Last Scheduled At")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Last time a deploy job was scheduled.';
+                }
+                field("Last Deploy At"; Rec."Last Deploy At")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Last deployment execution time.';
+                }
+                field("Last Deploy Status"; Rec."Last Deploy Status")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Last deployment status.';
+                }
+                field("Last Deploy Message"; Rec."Last Deploy Message")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Last deployment message or error.';
+                }
+                field("Last Deploy Run URL"; Rec."Last Deploy Run URL")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Workflow page URL in GitHub Actions.';
+                }
+            }
         }
         area(FactBoxes)
         {
@@ -235,6 +295,38 @@ page 50112 "Custom Approval Workflow"
                     CurrPage.Update(false);
                     Commit();
                     Mgt.OpenCodeEditor(Rec);
+                end;
+            }
+            action(OpenAutoDeployScheduler)
+            {
+                ApplicationArea = All;
+                Caption = 'Auto Deploy Scheduler';
+                Image = SendTo;
+                Promoted = true;
+                PromotedCategory = Process;
+                ToolTip = 'Open scheduler for instant or deferred deployment.';
+
+                trigger OnAction()
+                var
+                    Mgt: Codeunit "Custom Approval Workflow Mgt.";
+                begin
+                    Commit();
+                    Mgt.OpenAutoDeploy(Rec);
+                    Rec.Get(Rec."No.");
+                    CurrPage.Update(false);
+                end;
+            }
+            action(OpenLastDeployRun)
+            {
+                ApplicationArea = All;
+                Caption = 'Open Last Deploy Run';
+                Image = Navigate;
+                ToolTip = 'Open GitHub Actions workflow page for the last dispatch.';
+
+                trigger OnAction()
+                begin
+                    Rec.TestField("Last Deploy Run URL");
+                    Hyperlink(Rec."Last Deploy Run URL");
                 end;
             }
         }
