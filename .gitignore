@@ -1,0 +1,20 @@
+# AL / Business Central
+*.app
+.alpackages/
+.alcache/
+*.flf
+*.zip
+
+# VS Code / Cursor (local machine state)
+.vscode/rad.json
+.vscode/.altemplates/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# .NET / build
+bin/
+obj/
+*.user
