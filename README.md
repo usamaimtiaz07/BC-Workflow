@@ -45,6 +45,30 @@ If `git` is “not recognized” only inside the editor terminal, this workspace
 
 Use Visual Studio Code: **AL: Package** — output `.app` matches `publisher_name_version` from `app.json`.
 
+## Functional UX (no-code users)
+
+- **Code Editor Workflow AL**: preview reads the full generated blob (multi-line), and character counting reflects the full text (not a single-line truncation).
+- **Auto Deploy Scheduler**: uses a dialog-style page with footer actions (**Schedule**, **Deploy**, **Cancel**) so the buttons match the intended UX.
+  - **Instant Deploy = On**: **Deploy** is enabled; scheduling fields are hidden; **Schedule** is disabled.
+  - **Instant Deploy = Off**: **Schedule** is enabled; **Deploy** is disabled; scheduling fields are visible.
+  - **Deploy** dispatches a GitHub Actions workflow via API (requires repo/branch/workflow/token setup on Custom Approval Workflow).
+  - **Schedule** creates a Job Queue entry that dispatches the same GitHub workflow at the selected date/time.
+
+## Deployment automation + monitoring
+
+- Configure these fields on **Custom Approval Workflow**:
+  - `Deploy Repo Owner`
+  - `Deploy Repo Name`
+  - `Deploy Branch`
+  - `Deploy Workflow File` (default: `PublishToEnvironment.yaml`)
+  - `Deploy PAT Token` (needs permission to run workflows)
+- Monitoring fields update automatically after dispatch:
+  - `Last Scheduled At`
+  - `Last Deploy At`
+  - `Last Deploy Status`
+  - `Last Deploy Message`
+  - `Last Deploy Run URL` (open with **Open Last Deploy Run** action)
+
 ## License
 
 Your project — set license in `app.json` as needed.

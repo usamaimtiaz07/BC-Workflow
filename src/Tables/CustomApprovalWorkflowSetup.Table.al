@@ -191,6 +191,72 @@ table 50102 "Custom Approval Workflow Setup"
             Caption = 'Last Generated File Name';
             ToolTip = 'Suggested file name for download.';
         }
+        field(50; "Deploy Repo Owner"; Text[100])
+        {
+            Caption = 'Deploy Repo Owner';
+            ToolTip = 'GitHub repository owner used for deployment workflow dispatch.';
+        }
+        field(51; "Deploy Repo Name"; Text[100])
+        {
+            Caption = 'Deploy Repo Name';
+            ToolTip = 'GitHub repository name used for deployment workflow dispatch.';
+        }
+        field(52; "Deploy Branch"; Text[100])
+        {
+            Caption = 'Deploy Branch';
+            ToolTip = 'Git branch used for workflow dispatch.';
+            InitValue = 'main';
+        }
+        field(53; "Deploy Workflow File"; Text[150])
+        {
+            Caption = 'Deploy Workflow File';
+            ToolTip = 'Workflow file name in .github/workflows, for example PublishToEnvironment.yaml.';
+            InitValue = 'PublishToEnvironment.yaml';
+        }
+        field(54; "Deploy Environment"; Text[100])
+        {
+            Caption = 'Deploy Environment';
+            ToolTip = 'GitHub Actions environment name used by the workflow dispatch.';
+            InitValue = '*';
+        }
+        field(55; "Deploy PAT Token"; Text[250])
+        {
+            Caption = 'Deploy PAT Token';
+            ExtendedDatatype = Masked;
+            ToolTip = 'GitHub token with Actions workflow dispatch permission.';
+        }
+        field(56; "Last Deploy Status"; Option)
+        {
+            Caption = 'Last Deploy Status';
+            OptionMembers = None,Scheduled,Queued,Success,Failed;
+            OptionCaption = 'None,Scheduled,Queued,Success,Failed';
+            Editable = false;
+            ToolTip = 'Latest deployment execution status.';
+        }
+        field(57; "Last Deploy Message"; Text[250])
+        {
+            Caption = 'Last Deploy Message';
+            Editable = false;
+            ToolTip = 'Latest deployment message or error details.';
+        }
+        field(58; "Last Deploy At"; DateTime)
+        {
+            Caption = 'Last Deploy At';
+            Editable = false;
+            ToolTip = 'Date/time of latest deployment execution.';
+        }
+        field(59; "Last Deploy Run URL"; Text[250])
+        {
+            Caption = 'Last Deploy Run URL';
+            Editable = false;
+            ToolTip = 'GitHub Actions URL related to the latest deployment dispatch.';
+        }
+        field(60; "Last Scheduled At"; DateTime)
+        {
+            Caption = 'Last Scheduled At';
+            Editable = false;
+            ToolTip = 'Date/time of latest scheduled deployment request.';
+        }
     }
 
     keys
@@ -271,5 +337,11 @@ table 50102 "Custom Approval Workflow Setup"
         if not FieldRec.FindFirst() then
             exit;
         FieldNameOut := CopyStr(FieldRec.FieldName, 1, MaxStrLen(FieldNameOut));
+    end;
+
+    procedure GetByTableNo(TableId: Integer): Boolean
+    begin
+        SetRange("Table No.", TableId);
+        exit(FindFirst());
     end;
 }

@@ -13,7 +13,7 @@ codeunit 50120 "Custom Approval Workflow Mgt."
 
     procedure SendApprovalRequest(var ApprovalTesting: Record "Approval Testing")
     var
-        WorkflowManagement: Codeunit "Workflow Management";
+        WorkflowEngine: Codeunit "Custom Approval WF Engine";
         WfEvents: Codeunit "Appr. Test. WF Events";
         RecRef: RecordRef;
     begin
@@ -21,7 +21,7 @@ codeunit 50120 "Custom Approval Workflow Mgt."
             exit;
 
         RecRef.GetTable(ApprovalTesting);
-        WorkflowManagement.HandleEvent(WfEvents.RunWorkflowOnSendApprovalRequestCode(), RecRef);
+        WorkflowEngine.RunEvent(WfEvents.RunWorkflowOnSendApprovalRequestCode(), RecRef);
 
         if not ApprovalTesting.Get(ApprovalTesting.PK) then
             exit;
@@ -32,7 +32,7 @@ codeunit 50120 "Custom Approval Workflow Mgt."
 
     procedure CancelApprovalRequest(var ApprovalTesting: Record "Approval Testing")
     var
-        WorkflowManagement: Codeunit "Workflow Management";
+        WorkflowEngine: Codeunit "Custom Approval WF Engine";
         WfEvents: Codeunit "Appr. Test. WF Events";
         RecRef: RecordRef;
     begin
@@ -40,7 +40,7 @@ codeunit 50120 "Custom Approval Workflow Mgt."
             exit;
 
         RecRef.GetTable(ApprovalTesting);
-        WorkflowManagement.HandleEvent(WfEvents.RunWorkflowOnCancelApprovalRequestCode(), RecRef);
+        WorkflowEngine.RunEvent(WfEvents.RunWorkflowOnCancelApprovalRequestCode(), RecRef);
 
         if not ApprovalTesting.Get(ApprovalTesting.PK) then
             exit;
