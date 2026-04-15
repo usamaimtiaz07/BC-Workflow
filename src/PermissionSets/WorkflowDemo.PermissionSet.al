@@ -24,6 +24,7 @@ permissionset 50124 "Workflow Demo"
         page "Test Approval" = X,
         page "Custom Approval Workflow List" = X,
         page "Custom Approval Workflow" = X,
+        page "Custom Approval Workflow Steps" = X,
         page "Custom Approval Wf Gen Lines" = X,
         page "Code Editor Workflow AL" = X,
         page "Auto Deploy Scheduler" = X,

@@ -73,7 +73,7 @@ codeunit 50147 "WF Deploy Scheduler Mgt"
         RequestUrl := BuildDispatchApiUrl(Setup);
         WorkflowRunUrl := BuildWorkflowRunUrl(Setup);
 
-        Body := BuildDispatchBody(Setup."Deploy Branch", Setup."No.", Setup."Last Generated File Name");
+        Body := BuildDispatchBody(Setup."Deploy Branch", Setup."Deploy Environment", Setup."No.", Setup."Last Generated File Name");
 
         Content.WriteFrom(Body);
         Content.GetHeaders(ContentHeaders);
@@ -112,6 +112,7 @@ codeunit 50147 "WF Deploy Scheduler Mgt"
         Setup.TestField(Setup."Deploy Repo Name");
         Setup.TestField(Setup."Deploy Branch");
         Setup.TestField(Setup."Deploy Workflow File");
+        Setup.TestField(Setup."Deploy Environment");
         Setup.TestField(Setup."Deploy PAT Token");
     end;
 
@@ -133,12 +134,14 @@ codeunit 50147 "WF Deploy Scheduler Mgt"
           Setup."Deploy Workflow File"));
     end;
 
-    local procedure BuildDispatchBody(BranchName: Text; SetupNo: Code[20]; GeneratedFileName: Text[250]): Text
+    local procedure BuildDispatchBody(BranchName: Text; EnvironmentName: Text; SetupNo: Code[20]; GeneratedFileName: Text[250]): Text
     var
         Inputs: JsonObject;
         Root: JsonObject;
         BodyTxt: Text;
     begin
+        Inputs.Add('environmentName', EnvironmentName);
+        Inputs.Add('appVersion', 'current');
         Inputs.Add('setup_no', SetupNo);
         Inputs.Add('generated_file_name', GeneratedFileName);
 

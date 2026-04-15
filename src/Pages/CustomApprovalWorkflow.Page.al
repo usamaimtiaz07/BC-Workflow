@@ -201,6 +201,11 @@ page 50112 "Custom Approval Workflow"
                     ApplicationArea = All;
                     ToolTip = 'Workflow file name in .github/workflows.';
                 }
+                field("Deploy Environment"; Rec."Deploy Environment")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'GitHub Actions environment name used by the deploy workflow.';
+                }
                 field("Deploy PAT Token"; Rec."Deploy PAT Token")
                 {
                     ApplicationArea = All;
@@ -245,6 +250,12 @@ page 50112 "Custom Approval Workflow"
                 ApplicationArea = All;
                 Caption = 'Page Extensions';
                 SubPageLink = "Setup No." = field("No.");
+            }
+            part(WorkflowSteps; "Custom Approval Workflow Steps")
+            {
+                ApplicationArea = All;
+                Caption = 'Workflow Steps';
+                SubPageLink = "Workflow Code" = field("Workflow Code");
             }
         }
     }
@@ -295,6 +306,20 @@ page 50112 "Custom Approval Workflow"
                     CurrPage.Update(false);
                     Commit();
                     Mgt.OpenCodeEditor(Rec);
+                end;
+            }
+            action(OpenWorkflowSteps)
+            {
+                ApplicationArea = All;
+                Caption = 'Open Workflow Steps';
+                Image = WorkflowSetup;
+                ToolTip = 'Open the workflow steps for this workflow code.';
+                trigger OnAction()
+                var
+                    WorkflowStepsPage: Page "Custom Approval Workflow Steps";
+                begin
+                    WorkflowStepsPage.SetWorkflowCode(Rec."Workflow Code");
+                    WorkflowStepsPage.RunModal();
                 end;
             }
             action(OpenAutoDeployScheduler)
