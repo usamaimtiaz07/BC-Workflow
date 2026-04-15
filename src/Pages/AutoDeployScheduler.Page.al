@@ -64,6 +64,21 @@ page 50115 "Auto Deploy Scheduler"
     {
         area(Processing)
         {
+            action(OK)
+            {
+                ApplicationArea = All;
+                Caption = 'OK';
+                InFooterBar = true;
+                ToolTip = 'Confirm and run the selected deployment action.';
+
+                trigger OnAction()
+                begin
+                    if InstantDeploy then
+                        RunInstantDeployFlow()
+                    else
+                        RunScheduleDeployInfo();
+                end;
+            }
             action(ScheduleAction)
             {
                 ApplicationArea = All;
